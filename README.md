@@ -2,7 +2,7 @@
 
 単語帳を作って、自分のペースで覚えるブラウザアプリ。
 
-公開先: https://sabmwqes.github.io/memoaize/ （今回の変更はデプロイ前）
+公開先: https://sabmwqes.github.io/memoaize/
 
 ## 開発
 
@@ -31,6 +31,7 @@ TSV はヘッダーなしの「単語・意味」の2列です。単語帳ごと
 
 - [仕様と実装状況](./docs/project-spec.md): 合意済みの方針と、実装上の暫定的な選択
 - [デザイン](./docs/design.md): 指定された方向性、配色・フォント・操作の具体化
+- [公開の記録](./docs/deployment.md): デプロイ元、生成物、レビュー中の公開方針
 - [初期の brainstorming](./docs/project-brainstorm.md)
 
 公開する場合は `npm run deploy` を実行します。GitHub への書き込み権限が必要です。
