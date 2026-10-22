@@ -1,111 +1,58 @@
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/ibm-plex-mono/latin-700.css';
+@import '@fontsource/rajdhani/latin-600.css';
+@import '@fontsource/rajdhani/latin-700.css';
+@import '@fontsource/orbitron/latin-700.css';
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: dark;
+  --bg: #050507;
+  --surface: #0c0c10;
+  --raised: #131318;
+  --text: #f2f2f5;
+  --muted: #a3a3b1;
+  --border: #35353e;
+  --red: #ff526f;
+  --orange: #ff9d43;
+  --yellow: #f5da52;
+  --green: #87f57b;
+  --cyan: #45ddf5;
+  --blue: #749bff;
+  --purple: #c099ff;
+  --accent: var(--green);
+  --font-mono: 'IBM Plex Mono', 'Noto Sans JP', 'Yu Gothic', monospace;
+  --font-heading: 'Rajdhani', 'Noto Sans JP', sans-serif;
+  --font-display: 'Orbitron', monospace;
+  font-family: var(--font-mono);
   color: var(--text);
   background: var(--bg);
+  font-size: 13px;
+  line-height: 1.65;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
+*, *::before, *::after { box-sizing: border-box; border-radius: 0; }
+body { margin: 0; min-width: 320px; }
+button, input, textarea, select { font: inherit; }
+button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; color: inherit; }
+button:disabled { cursor: not-allowed; color: #737380 !important; border-color: #33333c !important; background: #141419 !important; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+input:focus, textarea:focus { outline: 1px solid var(--cyan); border-color: var(--cyan); outline-offset: 0; }
+input, textarea { border: 1px solid #5c5c69; padding: 11px 13px; background: #050507; color: var(--text); max-width: 100%; }
+input::placeholder, textarea::placeholder { color: #898998; }
+textarea { resize: vertical; }
+input[type='checkbox'] { appearance: none; width: 18px; height: 18px; padding: 0; border: 1px solid #828291; display: inline-grid; place-content: center; flex-shrink: 0; cursor: pointer; }
+input[type='checkbox']:checked { background: var(--green); border-color: var(--green); }
+input[type='checkbox']:checked::after { content: '✓'; font-size: 14px; font-weight: 700; color: #050507; line-height: 1; }
+input[type='file']::file-selector-button { color: #050507; background: var(--cyan); border: 0; border-radius: 0; font: inherit; padding: 6px 10px; margin-right: 12px; cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { line-height: 1.2; }
+a { color: inherit; }
+::selection { background: var(--cyan); color: #050507; }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #050507; }
+::-webkit-scrollbar-thumb { background: #444450; }
