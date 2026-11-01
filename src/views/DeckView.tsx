@@ -102,16 +102,12 @@ function StudyPanel({ notebook, cards }: { notebook: Notebook; cards: StudyCard[
   const set = (patch: Partial<Settings>) => commit(l => ({ ...l, settings: { ...l.settings, ...patch } }), { silent: true })
   const weak = cards.filter(c => c.difficult)
   const target = scope === 'weak' ? weak : cards
-  const sample = cards[0]
   const clampSec = (n: number) => Math.min(60, Math.max(1, n))
 
   return <div className="study-panel">
     <div className="opt">
-      <span className="label">ASK</span>
-      <Segmented label="出題する面" value={s.direction} onChange={direction => set({ direction })} options={[
-        { value: 'term', label: <>TERM<small>{sample ? ` ${clip(sample.term)}` : ''}</small></> },
-        { value: 'meaning', label: <>MEANING<small>{sample ? ` ${clip(sample.meaning)}` : ''}</small></> },
-      ]} />
+      <span className="label">QUIZ</span>
+      <DirectionSwitch direction={s.direction} sample={cards[0]} onChange={direction => set({ direction })} />
     </div>
     <div className="opt">
       <span className="label">CARDS</span>
@@ -144,7 +140,19 @@ function StudyPanel({ notebook, cards }: { notebook: Notebook; cards: StudyCard[
   </div>
 }
 
-const clip = (s: string) => { const one = s.split('\n')[0]; return one.length > 8 ? `${one.slice(0, 8)}…` : one }
+/** 出題の向き。押すたびに入れ替わる。実際の 1 枚目で「何を見て、何を答えるか」を示す。 */
+function DirectionSwitch({ direction, sample, onChange }: { direction: Settings['direction']; sample?: StudyCard; onChange: (d: Settings['direction']) => void }) {
+  const [from, to] = direction === 'term' ? ['TERM', 'MEANING'] : ['MEANING', 'TERM']
+  const shown = sample && (direction === 'term' ? sample.term : sample.meaning).split('\n')[0]
+  return <button type="button" className="direction" onClick={() => onChange(direction === 'term' ? 'meaning' : 'term')}
+    aria-label={`出題の向き: ${from === 'TERM' ? '単語を見て意味を答える' : '意味を見て単語を答える'}。押すと入れ替え`}>
+    <span key={direction} className="direction-body">
+      <span className="direction-main">{from}<Icon name="arrow" size={14} />{to}</span>
+      {shown && <span className="direction-example"><span className="q">{shown}</span><span className="a">→ ?</span></span>}
+    </span>
+    <span className="direction-swap" aria-hidden="true"><Icon name="swap" size={18} /></span>
+  </button>
+}
 
 function Stepper({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return <div className="stepper" role="group" aria-label={`${label}の表示秒数`}>

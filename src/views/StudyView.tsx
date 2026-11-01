@@ -7,30 +7,33 @@ import { hintText, markDifficult, requeue, retryDistance, shuffled } from '../li
 import type { StudyCard } from '../lib/model.ts'
 import { back, WEAK_ID } from '../lib/route.ts'
 
-interface Run { queue: StudyCard[]; revealed: boolean; hints: number; again: number; againIds: string[]; round: number }
+/** turn: 何枚目のカードを出しているか（同じカードの再出題でも増える。めくりのアニメーション用） */
+interface Run { queue: StudyCard[]; revealed: boolean; hints: number; again: number; againIds: string[]; round: number; turn: number }
 type Action = { type: 'reveal' } | { type: 'hint' } | { type: 'ok' } | { type: 'again' } | { type: 'refill'; cards: StudyCard[] }
 
 function reducer(s: Run, a: Action): Run {
   switch (a.type) {
     case 'reveal': return { ...s, revealed: true }
     case 'hint': return { ...s, hints: s.hints + 1 }
-    case 'ok': return { ...s, queue: s.queue.slice(1), revealed: false, hints: 0 }
+    case 'ok': return { ...s, queue: s.queue.slice(1), revealed: false, hints: 0, turn: s.turn + 1 }
     case 'again': {
       const id = s.queue[0]?.id
-      return { ...s, queue: requeue(s.queue), revealed: false, hints: 0, again: s.again + 1, againIds: id && !s.againIds.includes(id) ? [...s.againIds, id] : s.againIds }
+      return { ...s, queue: requeue(s.queue), revealed: false, hints: 0, turn: s.turn + 1, again: s.again + 1, againIds: id && !s.againIds.includes(id) ? [...s.againIds, id] : s.againIds }
     }
-    case 'refill': return { ...s, queue: a.cards, revealed: false, hints: 0, round: s.round + 1 }
+    case 'refill': return { ...s, queue: a.cards, revealed: false, hints: 0, round: s.round + 1, turn: s.turn + 1 }
   }
 }
 
 const sizeOf = (text: string) => text.length <= 14 ? 'xl' : text.length <= 40 ? 'lg' : text.length <= 120 ? 'md' : 'sm'
+/** カードの後ろに見せる残りの束（0〜2 枚） */
+const stackOf = (remaining: number) => `stack stack-${Math.min(2, Math.max(0, remaining))}`
 const exitTo = (id: string) => id === WEAK_ID ? { name: 'library' as const } : { name: 'deck' as const, id }
 
 export default function StudyView({ session, onRestart }: { session: Session; onRestart: (s: Session) => void }) {
   const { library, commit } = useApp()
   const { settings } = session
   const auto = settings.mode === 'auto'
-  const [run, dispatch] = useReducer(reducer, { queue: session.cards, revealed: false, hints: 0, again: 0, againIds: [], round: 1 })
+  const [run, dispatch] = useReducer(reducer, { queue: session.cards, revealed: false, hints: 0, again: 0, againIds: [], round: 1, turn: 0 })
   const [notice, setNotice] = useState('')
   const weakIds = useMemo(() => new Set(library.decks.flatMap(d => d.cards.filter(c => c.difficult).map(c => c.id))), [library])
   const current = run.queue[0]
@@ -73,12 +76,13 @@ export default function StudyView({ session, onRestart }: { session: Session; on
       </div>
       <span className="study-count" aria-label={`${total} 枚中 ${position} 枚目`}><b>{position}</b>/{total}</span>
     </header>
-    <div className="progress" aria-hidden="true"><span style={{ left: `${(position / total) * 100}%` }} /></div>
+    <div className="progress" aria-hidden="true"><span style={{ width: `${(position / total) * 100}%` }} /></div>
 
     {auto
-      ? <AutoCard key={`${run.round}-${current.id}`} card={current} question={question} answer={answer} weak={weak} settings={settings} onReveal={actions.reveal} onNext={actions.ok} revealed={run.revealed} />
+      ? <AutoCard key={run.turn} card={current} remaining={run.queue.length - 1} question={question} answer={answer} weak={weak} settings={settings} onReveal={actions.reveal} onNext={actions.ok} revealed={run.revealed} />
       : <>
-        <section className={`flashcard ${revealed ? 'revealed' : ''}`} aria-label="カード">
+        <div className={stackOf(run.queue.length - 1)}>
+        <section key={run.turn} className={`flashcard ${revealed ? 'revealed' : ''}`} aria-label="カード">
           <div className="card-chrome">
             <span className="card-from" style={{ '--c': current.deckColor } as CSSProperties}>{current.deckTitle}</span>
             <button type="button" className={`weak-chip ${weak ? 'on' : ''}`} aria-pressed={weak} onClick={actions.toggleWeak} title="W">
@@ -97,6 +101,7 @@ export default function StudyView({ session, onRestart }: { session: Session; on
           </div>
           {revealed && weak && <p className="weak-note"><Icon name="flag" size={12} filled />苦手のまま。覚えたら WEAK をタップして外せます。</p>}
         </section>
+        </div>
 
         <p className="study-notice" role="status">{notice && <><Icon name="again" size={14} />{notice}</>}</p>
 
@@ -141,8 +146,8 @@ function Keys({ revealed, actions, onExit }: { revealed: boolean; actions: Recor
 }
 
 /** 自動送り: 問題 → 答え → 次へ。タップで一時停止。 */
-function AutoCard({ card, question, answer, weak, settings, revealed, onReveal, onNext }: {
-  card: StudyCard; question: string; answer: string; weak: boolean; settings: Session['settings']; revealed: boolean; onReveal: () => void; onNext: () => void
+function AutoCard({ card, remaining, question, answer, weak, settings, revealed, onReveal, onNext }: {
+  card: StudyCard; remaining: number; question: string; answer: string; weak: boolean; settings: Session['settings']; revealed: boolean; onReveal: () => void; onNext: () => void
 }) {
   const [paused, setPaused] = useState(false)
   const phaseMs = (revealed ? settings.answerSeconds : settings.questionSeconds) * 1000
@@ -188,6 +193,7 @@ function AutoCard({ card, question, answer, weak, settings, revealed, onReveal, 
   }, [revealed, onNext, onReveal])
 
   return <>
+    <div className={stackOf(remaining)}>
     <section className={`flashcard auto ${revealed ? 'revealed' : ''} ${paused ? 'paused' : ''}`} aria-label="カード">
       <div className="card-chrome">
         <span className="card-from" style={{ '--c': card.deckColor } as CSSProperties}>{card.deckTitle}</span>
@@ -202,6 +208,7 @@ function AutoCard({ card, question, answer, weak, settings, revealed, onReveal, 
         <span key={`${revealed}`} className={revealed ? 'a' : 'q'} style={{ animationDuration: `${phaseMs}ms`, animationPlayState: paused ? 'paused' : 'running' }} />
       </div>
     </section>
+    </div>
     <div className="study-actions">
       <button type="button" className="btn" onClick={() => setPaused(p => !p)}>{paused ? <><Icon name="play" filled size={16} />RESUME</> : <><Icon name="pause" size={16} />PAUSE</>}</button>
       <button type="button" className="btn" onClick={() => { if (revealed) onNext(); else onReveal() }}><Icon name="skip" size={16} />{revealed ? 'NEXT' : 'SHOW'}</button>

@@ -18,6 +18,7 @@ const paths: Record<string, ReactNode> = {
   edit: <path d="M4 20h4.5L19.5 9 15 4.5 4 15.5zM13 6.5l4.5 4.5" />,
   trash: <path d="M4 7h16M9.5 7V4h5v3M6.5 7l1 13h9l1-13" />,
   arrow: <path d="M4 12h15M13 5.5l6.5 6.5-6.5 6.5" />,
+  swap: <path d="M7.5 3.5L4 7l3.5 3.5M4 7h14M16.5 13.5L20 17l-3.5 3.5M20 17H6" />,
 }
 
 export type IconName = keyof typeof paths
